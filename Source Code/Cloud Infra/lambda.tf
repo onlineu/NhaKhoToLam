@@ -7,7 +7,7 @@ data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../App/Algo"
   output_path = "${path.module}/build/lambda_function.zip"
-  excludes    = ["__pycache__", "tests", ".venv", "venv", "README.md"]
+  excludes    = ["__pycache__", "tests", ".venv", "venv", "README.md", "benchmark.py"]
 }
 
 resource "aws_cloudwatch_log_group" "lambda" {

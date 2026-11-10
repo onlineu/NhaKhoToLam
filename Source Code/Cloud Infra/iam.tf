@@ -23,7 +23,7 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc" {
 }
 
 data "aws_iam_policy_document" "lambda_dynamodb" {
-  # Items: store, find, name search, delete
+  # Items: store, find, name search, delete, scan
   statement {
     effect = "Allow"
     actions = [
@@ -36,6 +36,12 @@ data "aws_iam_policy_document" "lambda_dynamodb" {
       aws_dynamodb_table.items.arn,
       "${aws_dynamodb_table.items.arn}/index/name-index",
     ]
+  }
+
+    statement {
+    effect    = "Allow"
+    actions   = ["dynamodb:Scan"]
+    resources = [aws_dynamodb_table.items.arn]
   }
 
   # ID Assignment

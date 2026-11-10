@@ -10,13 +10,13 @@ resource "aws_dynamodb_table" "items" {
   }
 
   attribute {
-    name = "name"
+    name = "name_lower"
     type = "S"
   }
 
   global_secondary_index {
     name            = "name-index"
-    hash_key        = "name"
+    hash_key        = "name_lower"
     projection_type = "ALL"
   }
 

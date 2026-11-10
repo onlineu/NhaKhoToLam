@@ -11,7 +11,7 @@ def quick_sort(data, key=_identity):
     Iterative three-way quicksort with a median-of-three pivot:
       - three-way partitioning keeps runs of equal keys at O(n)
       - median-of-three avoids the O(n^2) worst case on already-sorted input
-      - recursing into the smaller side and looping on the larger side keeps the
+      - recursing into the smaller side and loping on the larger side keeps the
         explicit stack at O(log n), so there is no recursion-limit risk at 10,000+ items
     Average O(n log n).
     """

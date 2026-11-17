@@ -38,7 +38,7 @@ dnf install -y git python3-pip
 pip3 install flask gunicorn boto3 "pyjwt[crypto]"
 
 git clone ${var.repo_url} /opt/vindelivery/src
-ln -s "/opt/vindelivery/src/Source Code/App/UI-UX" /opt/vindelivery/ui
+ln -s "/opt/vindelivery/src/Source Code/App/GUI" /opt/vindelivery/ui
 
 cat > /etc/vindelivery.env <<ENV
 AWS_REGION=${var.aws_region}

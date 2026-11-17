@@ -17,3 +17,8 @@ variable "instance_type" {
   type    = string
   default = "t3.micro"
 }
+
+variable "repo_url" {
+  type        = string
+  description = "Public GitHub repo the instance clones at boot"
+}

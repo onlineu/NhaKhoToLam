@@ -31,6 +31,7 @@ data "aws_iam_policy_document" "lambda_dynamodb" {
       "dynamodb:PutItem",
       "dynamodb:Query",
       "dynamodb:DeleteItem",
+      "dynamodb:Scan",
     ]
     resources = [
       aws_dynamodb_table.items.arn,

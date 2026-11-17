@@ -31,14 +31,14 @@ resource "aws_instance" "web" {
     encrypted   = true
   }
 
-  user_data_replace_on_change = true
+    user_data_replace_on_change = true
   user_data                   = <<EOT
 #!/bin/bash
-dnf install -y python3-pip
-pip3 install flask gunicorn boto3 requests "pyjwt[crypto]"
+dnf install -y git python3-pip
+pip3 install flask gunicorn boto3 "pyjwt[crypto]"
 
-mkdir -p /opt/vindelivery/www
-echo "VinDelivery infrastructure is up" > /opt/vindelivery/www/index.html
+git clone ${var.repo_url} /opt/vindelivery/src
+ln -s "/opt/vindelivery/src/Source Code/App/UI-UX" /opt/vindelivery/ui
 
 cat > /etc/vindelivery.env <<ENV
 AWS_REGION=${var.aws_region}
@@ -47,15 +47,18 @@ COGNITO_USER_POOL_ID=${aws_cognito_user_pool.staff.id}
 COGNITO_CLIENT_ID=${aws_cognito_user_pool_client.app.id}
 ENV
 
-# Placeholder web server on port 80, replaced by the real app later
 cat > /etc/systemd/system/vindelivery.service <<UNIT
 [Unit]
 Description=VinDelivery web
-After=network.target
+After=network-online.target
 
 [Service]
+User=ec2-user
 EnvironmentFile=/etc/vindelivery.env
-ExecStart=/usr/bin/python3 -m http.server 80 --directory /opt/vindelivery/www
+WorkingDirectory=/opt/vindelivery/ui
+ExecStart=/usr/bin/python3 -m gunicorn --workers 2 --bind 0.0.0.0:80 server:app
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
 Restart=always
 
 [Install]

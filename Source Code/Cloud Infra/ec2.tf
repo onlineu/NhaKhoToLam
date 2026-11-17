@@ -31,7 +31,7 @@ resource "aws_instance" "web" {
     encrypted   = true
   }
 
-    user_data_replace_on_change = true
+  user_data_replace_on_change = true
   user_data                   = <<EOT
 #!/bin/bash
 dnf install -y git python3-pip

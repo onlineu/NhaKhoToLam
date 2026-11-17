@@ -79,7 +79,7 @@ def call(action, payload=None):
                          "user": user, "payload": payload or {}}))
 
 
-# ---------- pages ----------
+# Pages
 @app.get("/", defaults={"name": ""})
 @app.get("/<name>")
 def page(name):
@@ -106,7 +106,7 @@ def headers(resp):
     return resp
 
 
-# ---------- sign in ----------
+# Sign in
 @app.post("/api/login")
 def login():
     body = request.get_json(silent=True) or {}
@@ -153,7 +153,7 @@ def new_password():
     return reply(signed_in(resp["AuthenticationResult"]))
 
 
-# ---------- API: every route forwards to the Lambda ----------
+# API
 @app.get("/api/items")
 def list_items():
     return call("list_items", {"page": request.args.get("page", 1), "page_size": request.args.get("page_size", 50)})

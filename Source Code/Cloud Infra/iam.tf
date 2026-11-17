@@ -39,7 +39,7 @@ data "aws_iam_policy_document" "lambda_dynamodb" {
     ]
   }
 
-    statement {
+  statement {
     effect    = "Allow"
     actions   = ["dynamodb:Scan"]
     resources = [aws_dynamodb_table.items.arn]

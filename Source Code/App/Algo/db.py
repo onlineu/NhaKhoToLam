@@ -109,6 +109,16 @@ def scan_all():
             return [_plain(i) for i in items]
         kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
 
+def scan_item_ids():
+    """Only the item_id of every item, so the binary search option reads keys, not whole records."""
+    kwargs = {"ProjectionExpression": "item_id"}
+    ids = []
+    while True:
+        resp = table("ITEMS_TABLE").scan(**kwargs)
+        ids.extend(int(i["item_id"]) for i in resp.get("Items", []))
+        if "LastEvaluatedKey" not in resp:
+            return ids
+        kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
 
 def delete_item(item_id):
     try:

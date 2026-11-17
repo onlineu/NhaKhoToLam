@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VinDelivery manager console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%231b3f94'/%3E%3Crect x='6' y='9' width='20' height='14' rx='2' fill='%23ffc20e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+</head>
+<body data-role="admin" class="admin">
+<header id="top" hidden>
+  <div class="brand">VinDelivery<small>Manager console</small></div>
+  <nav aria-label="Sections">
+    <button data-tab="find">Find</button>
+    <button data-tab="store">Store</button>
+    <button data-tab="list">All items</button>
+  </nav>
+  <div class="who"><span id="who"></span><span class="role">Manager</span><button class="ghost" id="out" type="button">Sign out</button></div>
+</header>
+
+<main>
+  <section id="login" class="card narrow">
+    <h1>VinDelivery manager console</h1>
+    <p class="hint" style="margin:0">Sign in with a manager account to find, store and delete warehouse items.</p>
+    <form id="f-login">
+      <label for="u">Username</label><input id="u" type="text" autocomplete="username" required>
+      <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
+      <button class="btn">Sign in</button>
+    </form>
+    <form id="f-newpw" hidden>
+      <label for="np1">New password</label><input id="np1" type="password" autocomplete="new-password" required>
+      <label for="np2">Confirm new password</label><input id="np2" type="password" autocomplete="new-password" required>
+      <p class="hint">At least 12 characters with upper and lower case letters, a number and a symbol.</p>
+      <button class="btn">Save and sign in</button>
+    </form>
+    <p id="m-login" class="note" role="status"></p>
+    <p class="swap">Not a manager? <a data-link href="staff.html">Go to the staff site.</a></p>
+    <p id="demo-hint" class="hint" hidden>Demo mode with sample data. Sign in as admin with the password demo to use the manager tools. The password lockdown shows the lock screen.</p>
+  </section>
+
+  <section id="app" hidden>
+    <div id="p-find" class="card">
+      <h2>Find an item</h2>
+      <form id="f-find">
+        <fieldset class="seg"><legend>Search by</legend>
+          <label><input type="radio" name="mode" value="id" checked><span>Item ID</span></label>
+          <label><input type="radio" name="mode" value="name"><span>Item name</span></label>
+        </fieldset>
+        <div id="method">
+          <fieldset class="seg"><legend>Lookup method</legend>
+            <label><input type="radio" name="method" value="direct" checked><span>Direct lookup</span></label>
+            <label><input type="radio" name="method" value="binary"><span>Binary search</span></label>
+          </fieldset>
+          <p class="hint">Binary search sorts every ID with Quick Sort, then halves the sorted list until it finds the ID.</p>
+        </div>
+        <label for="q" id="q-label">Item ID</label>
+        <input id="q" type="text" autocomplete="off" placeholder="9030">
+        <button class="btn">Find item</button>
+      </form>
+      <p id="m-find" class="note" role="status"></p>
+      <div id="r-find"></div>
+    </div>
+
+    <div id="p-store" class="card" hidden>
+      <h2>Store an item</h2>
+      <form id="f-store">
+        <label for="s-name">Item name</label><input id="s-name" type="text" maxlength="100" required>
+        <label for="s-desc">Description (optional)</label><textarea id="s-desc" maxlength="500"></textarea>
+        <label for="s-loc">Shelf or aisle</label><input id="s-loc" type="text" maxlength="50" placeholder="Aisle 4, shelf C" required>
+        <fieldset class="seg"><legend>Item ID</legend>
+          <label><input type="radio" name="idmode" value="auto" checked><span>Assign automatically</span></label>
+          <label><input type="radio" name="idmode" value="manual"><span>Enter my own</span></label>
+        </fieldset>
+        <div id="manual" hidden>
+          <label for="s-id" class="sr">Item ID</label>
+          <input id="s-id" type="text" inputmode="numeric" autocomplete="off" placeholder="9030" style="margin-top:.6rem">
+        </div>
+        <button class="btn">Save item</button>
+      </form>
+      <p id="m-store" class="note" role="status"></p>
+    </div>
+
+    <div id="p-list" class="card" hidden>
+      <h2>All items</h2>
+      <div class="bar">
+        <p id="m-list" class="note" role="status"></p>
+        <button class="ghost" id="prev" type="button">Previous</button>
+        <span id="pg"></span>
+        <button class="ghost" id="next" type="button">Next</button>
+      </div>
+      <div id="r-list"></div>
+    </div>
+  </section>
+</main>
+
+<footer>This device is registered as <b id="dev"></b>. Give this ID to an administrator if you need access from a new device.</footer>
+
+<div id="lock" role="alertdialog" aria-labelledby="lock-h" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+  <h1 id="lock-h">Access restricted</h1>
+  <p>The system is locked. Contact an administrator.</p>
+  <button class="btn" id="relock" type="button">Back to sign in</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

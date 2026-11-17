@@ -1,0 +1,46 @@
+:root{--bg:#e4e8eb;--card:#fff;--ink:#151a21;--mute:#5b6672;--line:#c4ccd4;--blue:#1b3f94;--blue-ink:#fff;--hdr:#1b3f94;--hdr-ink:#fff;--tag:#ffc20e;--tag-ink:#151a21;--ok:#16794a;--bad:#b42318;
+--sans:"Barlow","Segoe UI",system-ui,sans-serif;--cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#11151a;--card:#1a2028;--ink:#e9edf1;--mute:#9aa6b2;--line:#303a45;--blue:#7ea2ff;--blue-ink:#0e1522;--hdr:#1c2633;--hdr-ink:#e9edf1;--ok:#5fd09a;--bad:#ff8f84}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:400 1rem/1.5 var(--sans)}
+h1,h2{font-family:var(--cond);font-weight:700;margin:0 0 .75rem;line-height:1.1}
+h1{font-size:2.1rem}h2{font-size:1.6rem}
+header{background:var(--hdr);color:var(--hdr-ink);display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1.5rem;padding:.6rem clamp(1rem,4vw,2.5rem)}
+.brand{font:700 1.5rem/1 var(--cond);margin-right:auto}.brand small{display:block;font:500 .8rem var(--sans);opacity:.8;margin-top:2px}
+nav{display:flex;gap:.25rem}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:inherit;font:600 1rem var(--sans);padding:.6rem .8rem;cursor:pointer}
+nav button[aria-current=page]{border-bottom-color:var(--tag)}
+.who{display:flex;align-items:center;gap:.75rem;font-size:.95rem}
+main{flex:1;width:min(1040px,100%);margin:0 auto;padding:1.75rem clamp(1rem,4vw,2.5rem) 3rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1.5rem}
+.narrow{max-width:26rem;margin:3vh auto 0}
+label,legend{display:block;font-weight:600;margin:1rem 0 .3rem;padding:0}
+input[type=text],input[type=password],textarea{width:100%;font:inherit;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:4px;padding:.6rem .7rem}
+textarea{min-height:5rem;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible,.seg input:focus-visible+span{outline:3px solid var(--blue);outline-offset:2px}
+.seg{border:0;padding:0;margin:0;display:flex}.seg legend{width:100%}
+.seg label{margin:0;position:relative}.seg input{position:absolute;opacity:0}
+.seg span{display:block;padding:.5rem 1.1rem;border:2px solid var(--line);font-weight:600;cursor:pointer}
+.seg label:first-of-type span{border-radius:4px 0 0 4px}.seg label:last-of-type span{border-radius:0 4px 4px 0;border-left:0}
+.seg input:checked+span{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.btn{margin-top:1.25rem;background:var(--blue);color:var(--blue-ink);border:0;border-radius:4px;padding:.65rem 1.4rem;font:600 1rem var(--sans);cursor:pointer}
+.btn:disabled{opacity:.5;cursor:wait}
+.ghost{background:none;border:2px solid currentColor;border-radius:4px;padding:.3rem .75rem;font:600 .9rem var(--sans);color:inherit;cursor:pointer}
+.ghost:disabled{opacity:.4;cursor:default}.danger{color:var(--bad)}
+.note{min-height:1.5em;margin:1rem 0 0;font-weight:500}.note.ok{color:var(--ok)}.note.bad{color:var(--bad)}
+.hint{color:var(--mute);font-size:.9rem;margin:.5rem 0 0}
+.scroll{overflow-x:auto;margin-top:1rem}
+table{width:100%;border-collapse:collapse;min-width:36rem}
+th{text-align:left;font-weight:600;color:var(--mute);font-size:.9rem;padding:.4rem .75rem;border-bottom:2px solid var(--ink)}
+td{padding:.7rem .75rem;border-bottom:1px solid var(--line);vertical-align:top}
+.tag{display:inline-block;background:var(--tag);color:var(--tag-ink);border:2px solid var(--tag-ink);border-radius:3px;padding:0 .55rem;font:700 1.35rem/1.35 var(--cond);font-variant-numeric:tabular-nums}
+.shelf{font-weight:600;white-space:nowrap}
+.bar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}.bar .note{margin:0 auto 0 0}
+footer{padding:1rem clamp(1rem,4vw,2.5rem);color:var(--mute);font-size:.85rem}
+#lock{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;z-index:9}
+#lock svg{width:4.5rem;height:4.5rem;margin-bottom:1rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+body.admin header{background:#151a21;color:#fff}
+.role{background:var(--tag);color:var(--tag-ink);border-radius:3px;padding:0 .5rem;font-weight:700;font-size:.85rem}
+.swap{margin-top:1rem;font-size:.95rem}.swap a{color:var(--blue);font-weight:600}
+@media (prefers-color-scheme:dark){body.admin header{background:#0b0e12;color:#e9edf1}}

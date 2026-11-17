@@ -59,3 +59,18 @@ def binary_search(sorted_data, target, key=_identity):
         else:
             hi = mid - 1
     return -1
+
+def binary_search_counted(sorted_data, target, key=_identity):
+    """Same as binary_search, but returns (index, steps) so the UI can show how many halvings it took."""
+    lo, hi, steps = 0, len(sorted_data) - 1, 0
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        steps += 1
+        k = key(sorted_data[mid])
+        if k == target:
+            return mid, steps
+        if k < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1, steps

@@ -3,7 +3,7 @@ import time
 
 import db
 import security
-from sorting import quick_sort
+from sorting import binary_search_counted, quick_sort
 from validation import (
     ValidationError,
     parse_device_id,
@@ -65,6 +65,21 @@ def find_item(user, payload):
         return _err(404, "ITEM_NOT_FOUND", "The item does not exist.")
     return _ok({"item": item})
 
+def find_item_binary(user, payload):
+    """Option for staff: Quick Sort every item ID, then binary search the sorted list."""
+    item_id = parse_item_id(payload.get("item_id"))
+    ids = db.scan_item_ids()
+    start = time.perf_counter()
+    sorted_ids = quick_sort(ids)
+    sort_ms = round((time.perf_counter() - start) * 1000, 3)
+    start = time.perf_counter()
+    index, steps = binary_search_counted(sorted_ids, item_id)
+    search_ms = round((time.perf_counter() - start) * 1000, 3)
+    item = db.get_item(item_id) if index >= 0 else None
+    if item is None:
+        return _err(404, "ITEM_NOT_FOUND", "The item does not exist.")
+    return _ok({"item": item, "method": "binary_search", "total": len(sorted_ids), "position": index + 1,
+                "steps": steps, "sort_ms": sort_ms, "search_ms": search_ms})
 
 def search_name(user, payload):
     name = parse_search_name(payload.get("name"))
@@ -104,6 +119,7 @@ def delete_item(user, payload):
 
 ACTIONS = {
     "store_item": store_item,
+    "find_item_binary": find_item_binary,
     "find_item": find_item,
     "search_name": search_name,
     "list_items": list_items,

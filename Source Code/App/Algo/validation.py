@@ -76,6 +76,16 @@ def parse_search_name(raw):
     return _clean_text(raw, "Name", MAX_NAME, required=True)
 
 
+MAX_SEARCH_WORDS = 5
+
+
+def parse_search_terms(raw):
+    """Search text to lowercase words: 'Life Jac' -> ['life', 'jac']. Any length from 1 character up."""
+    words = _clean_text(raw, "Name", MAX_NAME, required=True).casefold().split()
+    if len(words) > MAX_SEARCH_WORDS:
+        raise ValidationError("INVALID_INPUT", f"Use at most {MAX_SEARCH_WORDS} words to search.")
+    return words
+
 def parse_device_id(raw):
     if not isinstance(raw, str) or not _DEVICE_ID.match(raw) or raw in _RESERVED_DEVICE_IDS:
         raise ValidationError("INVALID_REQUEST", "Missing or malformed device ID.")

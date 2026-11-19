@@ -3,47 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VinDelivery staff</title>
+<title>NhaKhoToLam staff</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312213a'/%3E%3Crect x='10' y='5' width='12' height='11' rx='2' fill='%23fff'/%3E%3Crect x='4' y='17' width='12' height='10' rx='2' fill='%23fca311'/%3E%3Crect x='17' y='17' width='12' height='10' rx='2' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%231b3f94'/%3E%3Crect x='6' y='9' width='20' height='14' rx='2' fill='%23ffc20e'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 </head>
 <body data-role="staff">
-<header id="top" hidden>
-  <div class="brand">VinDelivery<small>NhaKhoToLam warehouse index</small></div>
-  <nav aria-label="Sections">
-    <button data-tab="find">Find</button>
-    <button data-tab="store">Store</button>
-    <button data-tab="list">All items</button>
-  </nav>
-  <div class="who"><span id="who"></span><button class="ghost" id="out" type="button">Sign out</button></div>
-</header>
 
-<main>
-  <section id="login" class="card narrow">
-    <h1>VinDelivery</h1>
-    <p class="hint" style="margin:0">Sign in with your staff account to find and store warehouse items.</p>
-    <form id="f-login">
-      <label for="u">Username</label><input id="u" type="text" autocomplete="username" required>
-      <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
-      <button class="btn">Sign in</button>
-    </form>
-    <form id="f-newpw" hidden>
-      <label for="np1">New password</label><input id="np1" type="password" autocomplete="new-password" required>
-      <label for="np2">Confirm new password</label><input id="np2" type="password" autocomplete="new-password" required>
-      <p class="hint">At least 12 characters with upper and lower case letters, a number and a symbol.</p>
-      <button class="btn">Save and sign in</button>
-    </form>
-    <p id="m-login" class="note" role="status"></p>
-    <p class="swap">Manager? <a data-link href="admin.html">Open the manager console.</a></p>
-    <p id="demo-hint" class="hint" hidden>Demo mode with sample data. Use any username and the password demo. The username newuser shows the first sign-in password step. The password lockdown shows the lock screen.</p>
-  </section>
+<section id="login">
+  <div class="brand-pane">
+    <div class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><rect class="c2" x="10" y="3" width="12" height="12" rx="2"/><rect class="c1" x="3" y="17" width="12" height="12" rx="2"/><rect class="c2" x="17" y="17" width="12" height="12" rx="2" opacity=".85"/></svg>NhaKhoToLam</div>
+    <div>
+      <div class="stripe"></div>
+      <h1>Know exactly what is on every shelf.</h1>
+      <p>Find any item by ID or name, store new stock, and keep shelf locations accurate.</p>
+    </div>
+  </div>
+  <div class="form-pane">
+    <div class="login-card">
+      <h2>Sign in</h2>
+      <p class="sub">Use your staff account.</p>
+      <form id="f-login">
+        <label for="u">Username</label><input id="u" type="text" autocomplete="username" required>
+        <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
+        <button class="btn">Sign in</button>
+      </form>
+      <form id="f-newpw" hidden>
+        <label for="np1">New password</label><input id="np1" type="password" autocomplete="new-password" required>
+        <label for="np2">Confirm new password</label><input id="np2" type="password" autocomplete="new-password" required>
+        <p class="hint">At least 12 characters with upper and lower case letters, a number and a symbol.</p>
+        <button class="btn">Save and sign in</button>
+      </form>
+      <p id="m-login" class="note" role="status"></p>
+      <p class="swap">Manager? <a data-link href="admin.html">Open the manager console.</a></p>
+      <p id="demo-hint" class="hint" hidden>Demo mode with sample data. Use any username and the password demo. The username newuser shows the first sign-in password step. The password lockdown shows the lock screen.</p>
+      <p class="devline">This device: <b class="dev"></b><button type="button" class="copy" data-copy>Copy</button></p>
+    </div>
+  </div>
+</section>
 
-  <section id="app" hidden>
-    <div id="p-find" class="card">
+<div class="shell" hidden>
+  <aside id="top" hidden>
+    <div class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><rect class="c2" x="10" y="3" width="12" height="12" rx="2"/><rect class="c1" x="3" y="17" width="12" height="12" rx="2"/><rect class="c2" x="17" y="17" width="12" height="12" rx="2" opacity=".85"/></svg>NhaKhoToLam</div>
+    <nav aria-label="Sections">
+      <button data-tab="find"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Find</button>
+      <button data-tab="store"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>Store</button>
+      <button data-tab="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>All items</button>
+    </nav>
+    <div class="side-foot">
+      <div class="user"><span class="av" id="av"></span><div><b id="who"></b><span class="role">Staff</span></div></div>
+      <div class="devline">Device <b class="dev"></b><button type="button" class="copy" data-copy>Copy</button></div>
+      <button class="ghost" id="out" type="button">Sign out</button>
+    </div>
+  </aside>
+
+  <main id="app" hidden>
+    <div id="p-find" class="panel">
       <h2>Find an item</h2>
+      <p class="sub">Look up an item by its ID or by name.</p>
       <form id="f-find">
         <fieldset class="seg"><legend>Search by</legend>
           <label><input type="radio" name="mode" value="id" checked><span>Item ID</span></label>
@@ -60,17 +79,18 @@
         <input id="q" type="text" autocomplete="off" placeholder="9030">
         <button class="btn">Find item</button>
       </form>
-      <p id="m-find" class="note" role="status"></p>
+      <p id="m-find" role="status"></p>
       <div id="r-find"></div>
     </div>
 
-    <div id="p-store" class="card" hidden>
+    <div id="p-store" class="panel" hidden>
       <h2>Store an item</h2>
+      <p class="sub">Add new stock and record where it is shelved.</p>
       <form id="f-store">
         <label for="s-name">Item name</label><input id="s-name" type="text" maxlength="100" required>
         <label for="s-desc">Description (optional)</label><textarea id="s-desc" maxlength="500"></textarea>
         <label for="s-loc">Shelf or aisle</label><input id="s-loc" type="text" maxlength="50" placeholder="Aisle 4, shelf C" required>
-        <fieldset class="seg"><legend>Item ID</legend>
+        <fieldset class="seg" style="margin-top:1.1rem"><legend>Item ID</legend>
           <label><input type="radio" name="idmode" value="auto" checked><span>Assign automatically</span></label>
           <label><input type="radio" name="idmode" value="manual"><span>Enter my own</span></label>
         </fieldset>
@@ -83,20 +103,19 @@
       <p id="m-store" class="note" role="status"></p>
     </div>
 
-    <div id="p-list" class="card" hidden>
+    <div id="p-list" class="panel" hidden>
       <h2>All items</h2>
+      <p class="sub">Every item, sorted by ID.</p>
       <div class="bar">
-        <p id="m-list" class="note" role="status"></p>
+        <div id="m-list" class="chips" role="status"></div>
         <button class="ghost" id="prev" type="button">Previous</button>
         <span id="pg"></span>
         <button class="ghost" id="next" type="button">Next</button>
       </div>
       <div id="r-list"></div>
     </div>
-  </section>
-</main>
-
-<footer>This device is registered as <b id="dev"></b>. Give this ID to an administrator if you need access from a new device.</footer>
+  </main>
+</div>
 
 <div id="lock" role="alertdialog" aria-labelledby="lock-h" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -104,7 +123,6 @@
   <p>The system is locked. Contact an administrator.</p>
   <button class="btn" id="relock" type="button">Back to sign in</button>
 </div>
-
 <script src="app.js"></script>
 </body>
 </html>

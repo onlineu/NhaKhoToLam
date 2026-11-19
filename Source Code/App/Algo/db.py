@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
 _cache = {}
@@ -84,15 +84,20 @@ def get_item(item_id):
     return _plain(item) if item else None
 
 
-def query_by_name(name):
-    """All items whose name matches case-insensitively"""
-    kwargs = {
-        "IndexName": "name-index",
-        "KeyConditionExpression": Key("name_lower").eq(name.casefold()),
-    }
+def search_names(terms):
+    """Items where every search word is the start of some word in the name (case-insensitive).
+
+    A full table Scan with a server-side filter on name_lower: begins_with covers the first
+    word, contains(" " + word) and contains("-" + word) cover later words. O(n) reads.
+    """
+    cond = None
+    for t in terms:
+        one = Attr("name_lower").begins_with(t) | Attr("name_lower").contains(" " + t) | Attr("name_lower").contains("-" + t)
+        cond = one if cond is None else cond & one
+    kwargs = {"FilterExpression": cond}
     items = []
     while True:
-        resp = table("ITEMS_TABLE").query(**kwargs)
+        resp = table("ITEMS_TABLE").scan(**kwargs)
         items.extend(resp.get("Items", []))
         if "LastEvaluatedKey" not in resp:
             return [_plain(i) for i in items]

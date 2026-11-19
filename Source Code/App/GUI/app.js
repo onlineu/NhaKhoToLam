@@ -6,9 +6,12 @@ const ROLE=document.body.dataset.role,PAGE=10,S={token:null,user:'',groups:[],pa
 // A browser cannot read a hardware ID, so each browser gets a random one that an admin can whitelist.
 const deviceId=(()=>{const mk=()=>'DEV-'+Math.random().toString(36).slice(2,10).toUpperCase();
   try{let d=localStorage.getItem('vd_device');if(!d){d=mk();localStorage.setItem('vd_device',d)}return d}catch(e){return mk()}})();
-$('#dev').textContent=deviceId;
+$$('.dev').forEach(e=>e.textContent=deviceId);
+const copy=async t=>{try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}};
+$$('[data-copy]').forEach(b=>b.onclick=async()=>{await copy(deviceId);b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1500)});
 
 function note(el,text,kind){el.textContent=text||'';el.className='note '+(kind||'')}
+function chips(el,list){el.className='chips';el.innerHTML=list.map(([k,v])=>`<span class="chip"><b>${esc(v)}</b> ${esc(k)}</span>`).join('')}
 
 async function api(method,path,body){
   const t=performance.now(),h={'Content-Type':'application/json','X-Device-Id':deviceId};
@@ -41,13 +44,13 @@ function show(tab){
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
 
 function enter(){
-  $('#login').hidden=true;$('#top').hidden=false;$('#app').hidden=false;
-  $('#who').textContent=S.user+(ROLE==='admin'?' (manager)':'');
+  $('#login').hidden=true;$('.shell').hidden=false;$('#top').hidden=false;$('#app').hidden=false;
+  $('#who').textContent=S.user;$('#av').textContent=S.user.slice(0,1).toUpperCase();
   show('find');
 }
 function signOut(msg){
   Object.assign(S,{token:null,user:'',groups:[]});
-  $('#top').hidden=true;$('#app').hidden=true;$('#login').hidden=false;
+  $('.shell').hidden=true;$('#top').hidden=true;$('#app').hidden=true;$('#login').hidden=false;
   $('#r-find').innerHTML=$('#r-list').innerHTML='';note($('#m-find'));note($('#m-store'));
   $('#f-newpw').hidden=true;$('#f-login').hidden=false;note($('#m-login'),msg||'');$('#u').focus();
 }
@@ -95,9 +98,8 @@ $('#f-find').onsubmit=async e=>{
   if(!j.ok)return note($('#m-find'),j.error.message,'bad');
   const items=j.data.items||[j.data.item];
   const D=j.data;
-  note($('#m-find'),D.method==='binary_search'
-    ?`Found in ${j.ms} ms with binary search: ${D.steps} ${D.steps===1?'step':'steps'} over ${D.total} sorted IDs, number ${D.position} in the sorted list. Quick Sort took ${D.sort_ms} ms and the search ${D.search_ms} ms.`
-    :`Found ${items.length} ${items.length===1?'item':'items'} in ${j.ms} ms.`+(D.sort_ms!=null?` Sorted by ID in ${D.sort_ms} ms.`:''),'ok');
+  if(D.method==='binary_search')chips($('#m-find'),[['method','Binary search'],['steps',D.steps],['IDs searched',D.total],['position in sorted list',D.position],['Quick Sort',D.sort_ms+' ms'],['search',D.search_ms+' ms'],['response',j.ms+' ms']]);
+  else chips($('#m-find'),[[items.length===1?'item found':'items found',items.length],['response',j.ms+' ms']].concat(D.sort_ms!=null?[['sorted by ID in',D.sort_ms+' ms']]:[]));
   $('#r-find').innerHTML=table(items);
 };
 
@@ -121,8 +123,8 @@ async function loadList(p){
   if(!j.ok)return note($('#m-list'),j.error.message,'bad');
   const d=j.data,pages=Math.max(1,Math.ceil(d.total/d.page_size));
   if(!d.items.length&&p>1)return loadList(p-1);
-  note($('#m-list'),d.total?`${d.total} items, sorted by ID in ${d.sort_ms} ms. Loaded in ${j.ms} ms.`:'No items yet. Use Store to add the first one.');
-  $('#r-list').innerHTML=d.items.length?table(d.items):'';
+  chips($('#m-list'),[['items',d.total],['sorted by ID in',d.sort_ms+' ms'],['loaded in',j.ms+' ms']]);
+  $('#r-list').innerHTML=d.items.length?table(d.items):'<div class="empty">No items yet. Use Store to add the first one.</div>';
   $('#pg').textContent=`Page ${d.page} of ${pages}`;$('#prev').disabled=p<=1;$('#next').disabled=p>=pages;
 }
 $('#prev').onclick=()=>loadList(S.page-1);$('#next').onclick=()=>loadList(S.page+1);

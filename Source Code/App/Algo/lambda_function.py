@@ -9,7 +9,7 @@ from validation import (
     parse_device_id,
     parse_item_fields,
     parse_item_id,
-    parse_search_name,
+    parse_search_terms,
     parse_username,
 )
 
@@ -18,6 +18,7 @@ logger.setLevel(logging.INFO)
 
 ALLOWED_GROUPS = {"staff", "admin"}
 AUTO_ID_RETRIES = 10
+MAX_NAME_RESULTS = 100
 DEFAULT_PAGE_SIZE = 50
 MAX_PAGE_SIZE = 500
 
@@ -82,11 +83,12 @@ def find_item_binary(user, payload):
                 "steps": steps, "sort_ms": sort_ms, "search_ms": search_ms})
 
 def search_name(user, payload):
-    name = parse_search_name(payload.get("name"))
-    items, sort_ms = _sorted_by_id(db.query_by_name(name))
+    terms = parse_search_terms(payload.get("name"))
+    items, sort_ms = _sorted_by_id(db.search_names(terms))
     if not items:
         return _err(404, "ITEM_NOT_FOUND", "The item does not exist.")
-    return _ok({"count": len(items), "items": items, "sort_ms": sort_ms})
+    return _ok({"count": len(items), "items": items[:MAX_NAME_RESULTS],
+                "truncated": len(items) > MAX_NAME_RESULTS, "sort_ms": sort_ms})
 
 
 def list_items(user, payload):

@@ -6,7 +6,7 @@ const ROLE=document.body.dataset.role,PAGE=10,S={token:null,user:'',groups:[],pa
 // A browser cannot read a hardware ID, so each browser gets a random one that an admin can whitelist.
 const deviceId=(()=>{const mk=()=>'DEV-'+Math.random().toString(36).slice(2,10).toUpperCase();
   try{let d=localStorage.getItem('vd_device');if(!d){d=mk();localStorage.setItem('vd_device',d)}return d}catch(e){return mk()}})();
-$$('.dev').forEach(e=>e.textContent=deviceId);
+$$('.dev,#dev').forEach(e=>e.textContent=deviceId);
 const copy=async t=>{try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}};
 $$('[data-copy]').forEach(b=>b.onclick=async()=>{await copy(deviceId);b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1500)});
 
@@ -28,8 +28,8 @@ async function api(method,path,body){
 
 function table(items){
   const admin=ROLE==='admin';
-  return '<div class="scroll"><table><thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Shelf or aisle</th><th>Added</th>'+(admin?'<th></th>':'')+'</tr></thead><tbody>'+
-  items.map(i=>`<tr><td><span class="tag">${esc(i.item_id)}</span></td><td>${esc(i.name)}</td><td>${esc(i.description)}</td><td class="shelf">${esc(i.location)}</td><td>${esc((i.created_at||'').slice(0,10))}</td>${admin?`<td><button class="ghost danger" type="button" data-del="${esc(i.item_id)}">Delete</button></td>`:''}</tr>`).join('')+
+  return '<div class="scroll"><table><thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Shelf or aisle</th><th>Qty</th><th>Added</th>'+(admin?'<th class="act">Actions</th>':'')+'</tr></thead><tbody>'+
+  items.map(i=>`<tr><td><span class="tag">${esc(i.item_id)}</span></td><td>${esc(i.name)}</td><td>${esc(i.description)}</td><td class="shelf">${esc(i.location)}</td><td class="qty${i.quantity<=5?' low':''}">${i.quantity==null?'-':esc(i.quantity)}</td><td>${esc((i.created_at||'').slice(0,10))}</td>${admin?`<td class="act"><button class="ghost danger" type="button" data-del="${esc(i.item_id)}">Delete</button></td>`:''}</tr>`).join('')+
   '</tbody></table></div>';
 }
 
@@ -44,13 +44,13 @@ function show(tab){
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
 
 function enter(){
-  $('#login').hidden=true;$('.shell').hidden=false;$('#top').hidden=false;$('#app').hidden=false;
-  $('#who').textContent=S.user;$('#av').textContent=S.user.slice(0,1).toUpperCase();
+  $('#login').hidden=true;if($('.shell'))$('.shell').hidden=false;$('#top').hidden=false;$('#app').hidden=false;
+  $('#who').textContent=S.user+($('#av')?'':(ROLE==='admin'?' (manager)':''));if($('#av'))$('#av').textContent=S.user.slice(0,1).toUpperCase();
   show('find');
 }
 function signOut(msg){
   Object.assign(S,{token:null,user:'',groups:[]});
-  $('.shell').hidden=true;$('#top').hidden=true;$('#app').hidden=true;$('#login').hidden=false;
+  if($('.shell'))$('.shell').hidden=true;$('#top').hidden=true;$('#app').hidden=true;$('#login').hidden=false;
   $('#r-find').innerHTML=$('#r-list').innerHTML='';note($('#m-find'));note($('#m-store'));
   $('#f-newpw').hidden=true;$('#f-login').hidden=false;note($('#m-login'),msg||'');$('#u').focus();
 }
@@ -83,8 +83,8 @@ $('#relock').onclick=()=>location.reload();
 $$('input[name=mode]').forEach(r=>r.onchange=()=>{
   const id=r.value==='id';
   if(!r.checked)return;
-  $('#method').hidden=!id;
-  $('#q-label').textContent=id?'Item ID':'Item name';$('#q').placeholder=id?'9030':'Plush toy';$('#q').focus();
+  $('#method').hidden=!id;if($('#name-hint'))$('#name-hint').hidden=id;
+  $('#q-label').textContent=id?'Item ID':'Item name';$('#q').placeholder=id?'9030':'Life jacket';$('#q').focus();
 });
 $('#f-find').onsubmit=async e=>{
   e.preventDefault();
@@ -97,9 +97,10 @@ $('#f-find').onsubmit=async e=>{
   b.disabled=false;
   if(!j.ok)return note($('#m-find'),j.error.message,'bad');
   const items=j.data.items||[j.data.item];
-  const D=j.data;
-  if(D.method==='binary_search')chips($('#m-find'),[['method','Binary search'],['steps',D.steps],['IDs searched',D.total],['position in sorted list',D.position],['Quick Sort',D.sort_ms+' ms'],['search',D.search_ms+' ms'],['response',j.ms+' ms']]);
-  else chips($('#m-find'),[[items.length===1?'item found':'items found',items.length],['response',j.ms+' ms']].concat(D.sort_ms!=null?[['sorted by ID in',D.sort_ms+' ms']]:[]));
+  const D=j.data,n=D.count||items.length;
+  note($('#m-find'),D.method==='binary_search'
+    ?`Found in ${j.ms} ms with binary search: ${D.steps} ${D.steps===1?'step':'steps'} over ${D.total} sorted IDs, number ${D.position} in the sorted list. Quick Sort took ${D.sort_ms} ms and the search ${D.search_ms} ms.`
+    :`Found ${n} ${n===1?'item':'items'} in ${j.ms} ms.`+(D.truncated?` Showing the first ${items.length}, type more letters to narrow it down.`:'')+(D.sort_ms!=null?` Sorted by ID in ${D.sort_ms} ms.`:''),'ok');
   $('#r-find').innerHTML=table(items);
 };
 
@@ -107,13 +108,13 @@ $$('input[name=idmode]').forEach(r=>r.onchange=syncId);
 function syncId(){const m=$('input[name=idmode]:checked').value==='manual';$('#manual').hidden=!m;if(m)$('#s-id').focus()}
 $('#f-store').onsubmit=async e=>{
   e.preventDefault();const b=e.submitter,manual=$('input[name=idmode]:checked').value==='manual';
-  const body={name:$('#s-name').value,description:$('#s-desc').value,location:$('#s-loc').value};
+  const body={name:$('#s-name').value,description:$('#s-desc').value,location:$('#s-loc').value,quantity:$('#s-qty').value};
   if(manual)body.item_id=$('#s-id').value;
   b.disabled=true;note($('#m-store'),'Saving…');
   const j=await api('POST','/api/items',body);b.disabled=false;
   if(!j.ok)return note($('#m-store'),j.error.message,'bad');
   const it=j.data.item;
-  note($('#m-store'),`Saved ${it.name} with ID ${it.item_id}${j.data.id_source==='auto'?' (assigned automatically)':''} in ${j.ms} ms.`,'ok');
+  note($('#m-store'),`Saved ${it.quantity} of ${it.name} with ID ${it.item_id}${j.data.id_source==='auto'?' (assigned automatically)':''} in ${j.ms} ms.`,'ok');
   e.target.reset();syncId();$('#s-name').focus();
 };
 
@@ -123,8 +124,8 @@ async function loadList(p){
   if(!j.ok)return note($('#m-list'),j.error.message,'bad');
   const d=j.data,pages=Math.max(1,Math.ceil(d.total/d.page_size));
   if(!d.items.length&&p>1)return loadList(p-1);
-  chips($('#m-list'),[['items',d.total],['sorted by ID in',d.sort_ms+' ms'],['loaded in',j.ms+' ms']]);
-  $('#r-list').innerHTML=d.items.length?table(d.items):'<div class="empty">No items yet. Use Store to add the first one.</div>';
+  note($('#m-list'),d.total?`${d.total} items, sorted by ID in ${d.sort_ms} ms. Loaded in ${j.ms} ms.`:'No items yet. Use Store to add the first one.');
+  $('#r-list').innerHTML=d.items.length?table(d.items):'';
   $('#pg').textContent=`Page ${d.page} of ${pages}`;$('#prev').disabled=p<=1;$('#next').disabled=p>=pages;
 }
 $('#prev').onclick=()=>loadList(S.page-1);$('#next').onclick=()=>loadList(S.page+1);
@@ -140,7 +141,7 @@ document.addEventListener('click',async e=>{
 });
 
 // ---------- demo mode (?demo): in-memory stand-in for the real API, for screenshots and design review ----------
-const DB=[67,9030,9293,150].map((n,i)=>({item_id:n,name:['Plush toy','Pallet jack','Safety vest','Plush toy'][i],description:['Soft toy, boxed','Manual, 2 tonne','High visibility, size L','Seasonal stock'][i],location:['Aisle 2, shelf B','Aisle 7, bay 3','Aisle 1, shelf A','Aisle 2, shelf C'][i],created_by:'jake',created_at:'2026-11-0'+(i+2)+'T09:00:00+00:00'}));
+const DB=[67,9030,9293,150,4410].map((n,i)=>({item_id:n,name:['Plush toy','Pallet jack','Safety vest','Plush toy','Life Jacket'][i],description:['Soft toy, boxed','Manual, 2 tonne','High visibility, size L','Seasonal stock','Adult, orange'][i],location:['Aisle 2, shelf B','Aisle 7, bay 3','Aisle 1, shelf A','Aisle 2, shelf C','Aisle 5, shelf D'][i],quantity:[40,6,120,3,15][i],created_by:'jake',created_at:'2026-11-0'+(i+2)+'T09:00:00+00:00'}));
 let nextId=1;
 const validId=x=>/^[0-9]+$/.test(x)||/^[0-9]{1,3}(,[0-9]{3})+$/.test(x);
 function mock(path,o){
@@ -151,12 +152,13 @@ function mock(path,o){
   const sorted=a=>[...a].sort((x,y)=>x.item_id-y.item_id);
   if(p==='/api/new-password')return R(200,{token:'demo',username:b.username,groups:['staff']});
   if(p==='/api/login'&&b.username==='newuser'&&b.password==='demo')return R(200,{challenge:'NEW_PASSWORD_REQUIRED',session:'s',username:b.username});
-  if(p==='/api/login')return b.password==='lockdown'?R(423,'Access restricted.'):b.password!=='demo'?R(401,'Incorrect username or password.'):R(200,{token:'demo',username:b.username,groups:[b.username==='admin'?'admin':'staff']});
-  if(m==='GET'&&p==='/api/search'){const r=sorted(DB.filter(i=>i.name.toLowerCase()===u.searchParams.get('name').trim().toLowerCase()));return r.length?R(200,{count:r.length,items:r,sort_ms:0.1}):R(404,miss)}
+  if(p==='/api/login')return b.password==='lockdown'?R(423,'Access restricted.'):b.password!=='demo'?R(401,'Incorrect username or password.'):R(200,{token:'demo',username:b.username,groups:[/^admin/i.test(b.username)?'admin':'staff']});
+  if(m==='GET'&&p==='/api/search'){const tk=u.searchParams.get('name').trim().toLowerCase().split(/\s+/);const r=sorted(DB.filter(i=>{const n=i.name.toLowerCase();return tk.every(t=>n.startsWith(t)||n.includes(' '+t)||n.includes('-'+t))}));return r.length?R(200,{count:r.length,items:r,sort_ms:0.1}):R(404,miss)}
   if(m==='GET'&&p==='/api/items'){const pg=+u.searchParams.get('page')||1,sz=+u.searchParams.get('page_size')||10;return R(200,{total:DB.length,page:pg,page_size:sz,items:sorted(DB).slice((pg-1)*sz,pg*sz),sort_ms:0.4})}
   if(m==='POST'&&p==='/api/items'){let n=null;if(b.item_id){n=pid(b.item_id);if(!n)return R(400,bad);if(DB.some(x=>x.item_id===n))return R(409,'That ID already exists.')}
     else{while(DB.some(x=>x.item_id===nextId))nextId++;n=nextId++}
-    const it={item_id:n,name:b.name.trim(),description:b.description.trim(),location:b.location.trim(),created_by:S.user,created_at:new Date().toISOString()};DB.push(it);return R(201,{item:it,id_source:b.item_id?'manual':'auto'})}
+    const qs=String(b.quantity??'').trim(),qn=qs===''?1:/^[0-9]+$/.test(qs)?+qs:-1;if(qn<0||qn>1000000)return R(400,'Quantity must be a whole number from 0 to 1,000,000.');
+    const it={item_id:n,quantity:qn,name:b.name.trim(),description:b.description.trim(),location:b.location.trim(),created_by:S.user,created_at:new Date().toISOString()};DB.push(it);return R(201,{item:it,id_source:b.item_id?'manual':'auto'})}
   const mt=p.match(/^\/api\/items\/(.*)$/);
   if(mt){const n=pid(decodeURIComponent(mt[1]));if(!n)return R(400,bad);const i=DB.findIndex(x=>x.item_id===n);if(i<0)return R(404,miss);
     if(m==='DELETE'){DB.splice(i,1);return R(200,{deleted:n})}if(u.searchParams.get('method')==='binary'){const ids=DB.map(x=>x.item_id).sort((a,b)=>a-b);let lo=0,hi=ids.length-1,st=0,pos=-1;while(lo<=hi){const md=(lo+hi)>>1;st++;if(ids[md]===n){pos=md;break}ids[md]<n?lo=md+1:hi=md-1}return R(200,{item:DB[i],method:'binary_search',total:ids.length,position:pos+1,steps:st,sort_ms:0.2,search_ms:0.01})}

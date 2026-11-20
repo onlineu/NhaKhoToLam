@@ -57,13 +57,14 @@ def next_counter_id():
     return int(resp["Attributes"]["current_value"])
 
 
-def put_item(item_id, name, description, location, created_by):
+def put_item(item_id, name, description, location, created_by, quantity=1): 
     item = {
         "item_id": item_id,
         "name": name,
         "name_lower": name.casefold(),
         "description": description,
         "location": location,
+        "quantity": quantity,
         "created_by": created_by,
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }

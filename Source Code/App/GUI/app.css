@@ -59,7 +59,7 @@ aside .devline{margin:0;color:var(--side-ink)}aside .devline b{color:#fff}aside 
 aside .ghost{color:#fff;border-color:rgba(255,255,255,.35);width:100%;padding:.5rem}
 main{padding:2.25rem clamp(1.25rem,4vw,3rem) 3rem;min-width:0}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(1.25rem,3vw,2rem);max-width:1000px;box-shadow:0 1px 2px rgba(15,27,45,.05)}
-.bar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}.bar .chips{margin:0 auto 0 0}
+.bar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}.bar .chips,.bar .note{margin:0 auto 0 0}
 .scroll{overflow-x:auto;margin-top:1.25rem}
 table{width:100%;border-collapse:collapse;min-width:40rem}
 th{text-align:left;font-weight:700;color:var(--mute);font-size:.82rem;padding:.5rem .8rem;border-bottom:1.5px solid var(--line)}
@@ -82,3 +82,6 @@ aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:
 nav{flex-direction:row;order:3;width:100%}nav button{flex:1;justify-content:center;padding:.6rem}nav button[aria-current=page]::before{display:none}
 .side-foot{margin:0 0 0 auto;flex-direction:row;align-items:center}aside .devline{display:none}aside .ghost{width:auto}
 }
+.qty{font-variant-numeric:tabular-nums;font-weight:800}.qty.low{color:var(--badfg)}
+th.act,td.act{position:sticky;right:0;background:var(--card);text-align:right;white-space:nowrap;box-shadow:-10px 0 8px -8px rgba(15,27,45,.22)}
+tbody tr:hover td.act{background:var(--chip)}.dt{white-space:nowrap}

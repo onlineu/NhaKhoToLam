@@ -78,6 +78,25 @@ def parse_search_name(raw):
 
 MAX_SEARCH_WORDS = 5
 
+MAX_QUANTITY = 1_000_000
+
+
+def parse_quantity(raw):
+    """Whole number from 0 to 1,000,000. Missing or blank means 1."""
+    bad = ValidationError("INVALID_INPUT", f"Quantity must be a whole number from 0 to {MAX_QUANTITY:,}.")
+    if raw is None or (isinstance(raw, str) and raw.strip() == ""):
+        return 1
+    if isinstance(raw, bool):
+        raise bad
+    if isinstance(raw, int):
+        value = raw
+    elif isinstance(raw, str) and _PLAIN_ID.match(raw.strip()):
+        value = int(raw.strip())
+    else:
+        raise bad
+    if not 0 <= value <= MAX_QUANTITY:
+        raise bad
+    return value
 
 def parse_search_terms(raw):
     """Search text to lowercase words: 'Life Jac' -> ['life', 'jac']. Any length from 1 character up."""

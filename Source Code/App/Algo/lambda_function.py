@@ -11,6 +11,7 @@ from validation import (
     parse_item_id,
     parse_search_terms,
     parse_username,
+    parse_quantity,
 )
 
 logger = logging.getLogger()
@@ -41,6 +42,7 @@ def _sorted_by_id(items):
 # Actions
 def store_item(user, payload):
     manual_id, name, description, location = parse_item_fields(payload)
+    quantity = parse_quantity(payload.get("quantity"))
 
     if manual_id is not None:
         try:

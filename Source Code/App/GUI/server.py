@@ -100,9 +100,12 @@ def headers(resp):
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"  # OpenStreetMap tiles require a Referer
     resp.headers["Content-Security-Policy"] = (
-        "default-src 'self'; script-src 'self' https://unpkg.com; img-src 'self' data: https://*.tile.openstreetmap.org; "
-        "connect-src 'self' https://router.project-osrm.org; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com")
+        "default-src 'self'; "
+    "script-src 'self' https://unpkg.com; "
+    "img-src 'self' data: https://openstreetmap.org https://*.tile.openstreetmap.org; "
+    "connect-src 'self' https://project-osrm.org; "
+    "style-src 'self' 'unsafe-inline' https://googleapis.com https://unpkg.com; "
+    "font-src https://gstatic.com")
     if request.path.startswith("/api/"):
         resp.headers["Cache-Control"] = "no-store"
     return resp

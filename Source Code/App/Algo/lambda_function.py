@@ -1,17 +1,29 @@
+"""VinDelivery backend entry point (AWS Lambda, Python).
+
+Invoked directly by the EC2 tier with:
+  {"action": "...", "device_id": "...", "user": {"username": "...", "groups": [...]}, "payload": {...}}
+Always returns:
+  {"ok": true,  "status": 200, "data": {...}}
+  {"ok": false, "status": 4xx/5xx, "error": {"code": "...", "message": "..."}}
+"""
 import logging
 import time
 
+import benchmarking
 import db
+import routing
 import security
+import suggest
 from sorting import binary_search_counted, quick_sort
 from validation import (
     ValidationError,
     parse_device_id,
     parse_item_fields,
     parse_item_id,
+    parse_quantity,
+    parse_route,
     parse_search_terms,
     parse_username,
-    parse_quantity,
 )
 
 logger = logging.getLogger()
@@ -39,14 +51,15 @@ def _sorted_by_id(items):
     return result, round((time.perf_counter() - start) * 1000, 3)
 
 
-# Actions
+# ---------- actions ----------
 def store_item(user, payload):
     manual_id, name, description, location = parse_item_fields(payload)
     quantity = parse_quantity(payload.get("quantity"))
 
     if manual_id is not None:
         try:
-            item = db.put_item(manual_id, name, description, location, user["username"])
+            item = db.put_item(manual_id, name, description, location, user["username"], quantity)
+            suggest.invalidate()
         except db.DuplicateIdError:
             return _err(409, "DUPLICATE_ID", "That ID already exists.")
         return _ok({"item": item, "id_source": "manual"}, 201)
@@ -54,7 +67,8 @@ def store_item(user, payload):
     # Automatic ID: a manually chosen ID may already occupy the counter's next value
     for _ in range(AUTO_ID_RETRIES):
         try:
-            item = db.put_item(db.next_counter_id(), name, description, location, user["username"])
+            item = db.put_item(db.next_counter_id(), name, description, location, user["username"], quantity)
+            suggest.invalidate()
             return _ok({"item": item, "id_source": "auto"}, 201)
         except db.DuplicateIdError:
             continue
@@ -67,6 +81,34 @@ def find_item(user, payload):
     if item is None:
         return _err(404, "ITEM_NOT_FOUND", "The item does not exist.")
     return _ok({"item": item})
+
+
+def suggest_names(user, payload):
+    return _ok({"suggestions": suggest.suggestions(parse_search_terms(payload.get("q")))})
+
+
+def plan_route(user, payload):
+    algorithm, points, round_trip, matrix = parse_route(payload)
+    try:
+        result = routing.solve(algorithm, matrix or routing.haversine_matrix(points), round_trip)
+    except routing.RouteError as err:
+        raise ValidationError("INVALID_INPUT", str(err))
+    result["distance_source"] = "road" if matrix else "straight-line"
+    return _ok(result)
+
+
+def run_benchmark(user, payload):
+    if "admin" not in user["groups"]:
+        return _err(403, "FORBIDDEN", "Only managers can run the benchmark.")
+    start = time.perf_counter()
+    ids = db.scan_item_ids()
+    read_ms = round((time.perf_counter() - start) * 1000, 3)
+    if len(ids) < 2:
+        return _err(400, "INVALID_INPUT", "Store at least 2 items before running the benchmark.")
+    result = benchmarking.run(ids, db.get_item)
+    result["read_ms"] = read_ms
+    return _ok(result)
+
 
 def find_item_binary(user, payload):
     """Option for staff: Quick Sort every item ID, then binary search the sorted list."""
@@ -83,6 +125,7 @@ def find_item_binary(user, payload):
         return _err(404, "ITEM_NOT_FOUND", "The item does not exist.")
     return _ok({"item": item, "method": "binary_search", "total": len(sorted_ids), "position": index + 1,
                 "steps": steps, "sort_ms": sort_ms, "search_ms": search_ms})
+
 
 def search_name(user, payload):
     terms = parse_search_terms(payload.get("name"))
@@ -116,6 +159,7 @@ def delete_item(user, payload):
     item_id = parse_item_id(payload.get("item_id"))
     try:
         db.delete_item(item_id)
+        suggest.invalidate()
     except db.ItemNotFoundError:
         return _err(404, "ITEM_NOT_FOUND", "The item does not exist.")
     return _ok({"deleted": item_id})
@@ -123,8 +167,11 @@ def delete_item(user, payload):
 
 ACTIONS = {
     "store_item": store_item,
-    "find_item_binary": find_item_binary,
     "find_item": find_item,
+    "find_item_binary": find_item_binary,
+    "suggest_names": suggest_names,
+    "plan_route": plan_route,
+    "run_benchmark": run_benchmark,
     "search_name": search_name,
     "list_items": list_items,
     "delete_item": delete_item,

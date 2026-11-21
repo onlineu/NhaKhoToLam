@@ -85,3 +85,20 @@ nav{flex-direction:row;order:3;width:100%}nav button{flex:1;justify-content:cent
 .qty{font-variant-numeric:tabular-nums;font-weight:800}.qty.low{color:var(--badfg)}
 th.act,td.act{position:sticky;right:0;background:var(--card);text-align:right;white-space:nowrap;box-shadow:-10px 0 8px -8px rgba(15,27,45,.22)}
 tbody tr:hover td.act{background:var(--chip)}.dt{white-space:nowrap}
+
+/* suggestions */
+.combo{position:relative}
+.sug{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 4px);margin:0;padding:.35rem;list-style:none;background:var(--card);border:1.5px solid var(--line);border-radius:12px;box-shadow:0 12px 28px rgba(15,27,45,.18)}
+.sug li{padding:.55rem .75rem;border-radius:8px;cursor:pointer}.sug li:hover,.sug li[aria-selected=true]{background:var(--chip)}
+/* route planner and benchmark */
+select{width:100%;font:inherit;color:inherit;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:.7rem .85rem}
+select:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+.route-ctl{display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:flex-end}.route-ctl>div{flex:1 1 20rem}
+.check{display:flex;align-items:center;gap:.5rem;margin:0 0 .6rem;font-weight:600}.check input{width:1.1rem;height:1.1rem}
+#map{height:430px;margin-top:1rem;border-radius:12px;border:1px solid var(--line);isolation:isolate}
+.row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-top:1.1rem}.row .btn{margin-top:0}
+.pin{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--card);font:800 .9rem var(--font);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pin.w{background:var(--amber);color:var(--amber-ink)}
+h3{font-size:1.05rem;margin:1.75rem 0 0}.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700}
+.meter{display:block;height:10px;background:var(--chip);border-radius:5px;min-width:110px}.meter i{display:block;height:100%;background:var(--amber);border-radius:5px}
+.cx{color:var(--mute);font-size:.9rem}

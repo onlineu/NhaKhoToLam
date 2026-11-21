@@ -20,7 +20,8 @@ FUNCTION = os.environ["LAMBDA_FUNCTION_NAME"]
 ISSUER = f"https://cognito-idp.{REGION}.amazonaws.com/{POOL_ID}"
 HERE = os.path.dirname(os.path.abspath(__file__))
 PAGES = {"": "staff.html", "staff.html": "staff.html", "admin": "admin.html", "admin.html": "admin.html",
-         "app.js": "app.js", "app.css": "app.css"}
+         "app.js": "app.js", "app.css": "app.css",
+         "extras.js": "extras.js", "leaflet.js": "leaflet.js", "leaflet.css": "leaflet.css"}
 
 app = Flask(__name__, static_folder=None)
 log = logging.getLogger("vindelivery")
@@ -79,7 +80,7 @@ def call(action, payload=None):
                          "user": user, "payload": payload or {}}))
 
 
-# Pages
+# ---------- pages ----------
 @app.get("/", defaults={"name": ""})
 @app.get("/<name>")
 def page(name):
@@ -97,16 +98,17 @@ def health():
 def headers(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
-    resp.headers["Referrer-Policy"] = "no-referrer"
+    resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"  # OpenStreetMap tiles require a Referer
     resp.headers["Content-Security-Policy"] = (
-        "default-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com")
+        "default-src 'self'; script-src 'self' https://unpkg.com; img-src 'self' data: https://*.tile.openstreetmap.org; "
+        "connect-src 'self' https://router.project-osrm.org; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com")
     if request.path.startswith("/api/"):
         resp.headers["Cache-Control"] = "no-store"
     return resp
 
 
-# Sign in
+# ---------- sign in ----------
 @app.post("/api/login")
 def login():
     body = request.get_json(silent=True) or {}
@@ -153,7 +155,7 @@ def new_password():
     return reply(signed_in(resp["AuthenticationResult"]))
 
 
-# API
+# ---------- API: every route forwards to the Lambda ----------
 @app.get("/api/items")
 def list_items():
     return call("list_items", {"page": request.args.get("page", 1), "page_size": request.args.get("page_size", 50)})
@@ -178,3 +180,18 @@ def store_item():
 @app.delete("/api/items/<path:item_id>")
 def delete_item(item_id):
     return call("delete_item", {"item_id": item_id})
+
+
+@app.get("/api/suggest")
+def suggest_names():
+    return call("suggest_names", {"q": request.args.get("q", "")})
+
+
+@app.post("/api/route")
+def plan_route():
+    return call("plan_route", request.get_json(silent=True) or {})
+
+
+@app.post("/api/benchmark")
+def run_benchmark():
+    return call("run_benchmark")

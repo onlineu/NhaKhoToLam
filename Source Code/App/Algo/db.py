@@ -1,4 +1,4 @@
-"""Deal with DynamoDB"""
+"""DynamoDB access layer. The only module that talks to AWS."""
 import os
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -19,7 +19,7 @@ class ItemNotFoundError(Exception):
 
 
 def reset_cache():
-    """Used by tests so each test builds fresh clients"""
+    """Used by tests so each test builds fresh clients."""
     _cache.clear()
 
 
@@ -32,7 +32,7 @@ def table(env_var):
 
 
 def _plain(value):
-    """DynamoDB returns numbers as Decimal, convert so results are JSON serialisable."""
+    """DynamoDB returns numbers as Decimal; convert so results are JSON-serializable."""
     if isinstance(value, Decimal):
         return int(value) if value == value.to_integral_value() else float(value)
     if isinstance(value, dict):
@@ -46,7 +46,7 @@ def _is_condition_failure(err):
     return err.response["Error"]["Code"] == "ConditionalCheckFailedException"
 
 
-# items
+# ---------- items ----------
 def next_counter_id():
     resp = table("COUNTERS_TABLE").update_item(
         Key={"counter_name": "item_id"},
@@ -57,7 +57,7 @@ def next_counter_id():
     return int(resp["Attributes"]["current_value"])
 
 
-def put_item(item_id, name, description, location, created_by, quantity=1): 
+def put_item(item_id, name, description, location, created_by, quantity=1):
     item = {
         "item_id": item_id,
         "name": name,
@@ -105,6 +105,18 @@ def search_names(terms):
         kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
 
 
+def scan_names():
+    """Only the name attribute of every item."""
+    kwargs = {"ProjectionExpression": "#n", "ExpressionAttributeNames": {"#n": "name"}}
+    names = []
+    while True:
+        resp = table("ITEMS_TABLE").scan(**kwargs)
+        names.extend(i["name"] for i in resp.get("Items", []) if "name" in i)
+        if "LastEvaluatedKey" not in resp:
+            return names
+        kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+
+
 def scan_all():
     kwargs = {}
     items = []
@@ -114,6 +126,7 @@ def scan_all():
         if "LastEvaluatedKey" not in resp:
             return [_plain(i) for i in items]
         kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+
 
 def scan_item_ids():
     """Only the item_id of every item, so the binary search option reads keys, not whole records."""
@@ -126,6 +139,7 @@ def scan_item_ids():
             return ids
         kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
 
+
 def delete_item(item_id):
     try:
         table("ITEMS_TABLE").delete_item(
@@ -137,7 +151,7 @@ def delete_item(item_id):
         raise
 
 
-# Whitelist and Lockdown
+# ---------- whitelist / lockdown ----------
 def lockdown_active():
     resp = table("WHITELIST_TABLE").get_item(Key={"device_id": "LOCKDOWN"}, ConsistentRead=True)
     return bool(resp.get("Item", {}).get("active", False))

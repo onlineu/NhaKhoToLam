@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 <link rel="stylesheet" href="app.css">
 </head>
 <body data-role="staff">
@@ -51,6 +52,7 @@
       <button data-tab="find"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Find</button>
       <button data-tab="store"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>Store</button>
       <button data-tab="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>All items</button>
+      <button data-tab="route"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"/></svg>Route planner</button>
     </nav>
     <div class="side-foot">
       <div class="user"><span class="av" id="av"></span><div><b id="who"></b><span class="role">Staff</span></div></div>
@@ -76,7 +78,7 @@
           <p class="hint">Binary search sorts every ID with Quick Sort, then halves the sorted list until it finds the ID.</p>
         </div>
         <label for="q" id="q-label">Item ID</label>
-        <input id="q" type="text" autocomplete="off" placeholder="9030">
+        <div class="combo"><input id="q" type="text" autocomplete="off" placeholder="9030" role="combobox" aria-autocomplete="list" aria-controls="sug" aria-expanded="false"><ul id="sug" class="sug" role="listbox" hidden></ul></div>
         <p class="hint" id="name-hint" hidden>Type the start of any word in the name, in any case. For example j, life or life jac finds Life Jacket.</p>
         <button class="btn">Find item</button>
       </form>
@@ -116,6 +118,27 @@
       </div>
       <div id="r-list"></div>
     </div>
+
+    <div id="p-route" class="panel" hidden>
+      <h2>Route planner</h2>
+      <p class="sub">Click the map to place the warehouse first, then each client stop. Pick how the shortest route is found.</p>
+      <div class="route-ctl">
+        <div><label for="algo">Algorithm</label>
+          <select id="algo">
+            <option value="brute_force">Brute force: exhaustive search (up to 9 stops)</option>
+            <option value="held_karp">Dynamic programming: Held-Karp (up to 12 stops)</option>
+            <option value="nearest_neighbour">Nearest neighbour: greedy (up to 12 stops)</option>
+          </select></div>
+        <label class="check"><input type="checkbox" id="trip" checked> Return to the warehouse</label>
+      </div>
+      <div id="map" aria-label="Map for placing the warehouse and client stops"></div>
+      <div class="row">
+        <button class="btn" id="run-route" type="button">Find shortest route</button>
+        <button class="ghost" id="undo-stop" type="button">Undo last stop</button>
+        <button class="ghost" id="clear-stops" type="button">Clear map</button>
+      </div>
+      <div id="m-route" role="status"></div>
+    </div>
   </main>
 </div>
 
@@ -125,6 +148,9 @@
   <p>The system is locked. Contact an administrator.</p>
   <button class="btn" id="relock" type="button">Back to sign in</button>
 </div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script>window.L||document.write('<script src="leaflet.js"><\/script>')</script>
 <script src="app.js"></script>
+<script src="extras.js"></script>
 </body>
 </html>

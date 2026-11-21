@@ -35,7 +35,7 @@ function table(items){
 
 function show(tab){
   S.tab=tab;
-  ['find','store','list'].forEach(t=>$('#p-'+t).hidden=t!==tab);
+  $$('main .panel').forEach(p=>p.hidden=p.id!=='p-'+tab);
   $$('nav button').forEach(b=>b.toggleAttribute('aria-current',b.dataset.tab===tab)||b.removeAttribute('aria-current'));
   $$('nav button').forEach(b=>{if(b.dataset.tab===tab)b.setAttribute('aria-current','page')});
   if(tab==='list')loadList(1);
@@ -150,6 +150,17 @@ function mock(path,o){
   const bad='The ID is invalid. Use digits only, for example 9030 or 9,030.',miss='The item does not exist.';
   const pid=x=>validId(String(x))?+String(x).replace(/,/g,''):null;
   const sorted=a=>[...a].sort((x,y)=>x.item_id-y.item_id);
+  if(p==='/api/suggest'){const tk=u.searchParams.get('q').trim().toLowerCase().split(/\s+/);return R(200,{suggestions:[...new Set(DB.map(i=>i.name))].filter(n=>{const w=n.toLowerCase().split(/[\s-]+/);return tk.every(t=>w.some(x=>x.startsWith(t)))}).sort((a,c)=>a.toLowerCase()<c.toLowerCase()?-1:1).slice(0,8)})}
+  if(p==='/api/benchmark'){const s=(name,ms,complexity)=>({name,ms,complexity,note:''}),q=(name,prep,us,complexity)=>({name,prep_ms:prep,per_lookup_us:us,total_ms:+(prep+us/1000).toFixed(3),complexity,note:''});
+    return R(200,{demo:true,n:DB.length,read_ms:40,targets:DB.length,sorts:[s('Quick Sort (ours)',19.2,'O(n log n) average, O(n²) worst'),s('Merge Sort',24.1,'O(n log n) always'),s('Heap Sort',46.5,'O(n log n) always'),s('Insertion Sort',1918,'O(n²)'),s('Python sorted (Timsort)',0.8,'O(n log n), built in')],
+      searches:[q('Binary search (ours)',19.2,1.4,'O(log n) after sorting'),q('Interpolation search',19.2,2.1,'O(log log n) if IDs are evenly spread'),q('Linear search',0,160,'O(n)'),q('Hash set (Python set)',0.4,0.06,'O(1) average after building'),q('DynamoDB direct lookup',0,9000,'O(1) key lookup, one network call')]})}
+  if(p==='/api/route'){const P=b.points,n=P.length,rad=x=>x*Math.PI/180,hv=(a,c)=>{const h=Math.sin(rad(c.lat-a.lat)/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(c.lat))*Math.sin(rad(c.lng-a.lng)/2)**2;return 12742017.6*Math.asin(Math.sqrt(h))};
+    const D=b.matrix||P.map(a=>P.map(c=>hv(a,c))),cost=r=>r.slice(1).reduce((t,x,i)=>t+D[r[i]][x],0)+(b.round_trip?D[r[r.length-1]][0]:0);
+    if(b.algorithm==='brute_force'&&n>10)return R(400,'Brute force supports at most 9 client stops. Pick another algorithm or remove stops.');
+    let best=null,chk=0;
+    if(b.algorithm==='nearest_neighbour'||n>9){const r=[0],left=new Set(P.map((_,i)=>i).slice(1));while(left.size){const l=r[r.length-1],nx=[...left].sort((x,y)=>D[l][x]-D[l][y])[0];r.push(nx);left.delete(nx)}best=r;chk=n*n}
+    else{const rec=(r,left)=>{if(!left.length){chk++;if(!best||cost(r)<cost(best))best=r;return}left.forEach((x,i)=>rec([...r,x],left.filter((_,j)=>j!==i)))};rec([0],P.map((_,i)=>i).slice(1))}
+    return R(200,{algorithm:b.algorithm,order:best,distance_m:Math.round(cost(best)*10)/10,checked:chk,elapsed_ms:1.5,round_trip:b.round_trip,distance_source:b.matrix?'road':'straight-line'})}
   if(p==='/api/new-password')return R(200,{token:'demo',username:b.username,groups:['staff']});
   if(p==='/api/login'&&b.username==='newuser'&&b.password==='demo')return R(200,{challenge:'NEW_PASSWORD_REQUIRED',session:'s',username:b.username});
   if(p==='/api/login')return b.password==='lockdown'?R(423,'Access restricted.'):b.password!=='demo'?R(401,'Incorrect username or password.'):R(200,{token:'demo',username:b.username,groups:[/^admin/i.test(b.username)?'admin':'staff']});
